@@ -5,63 +5,18 @@ import toast from "react-hot-toast";
 import LoginLeftSide from "./LoginLeftSide";
 
 const LoginForm = ({ role, title, subtitle }) => {
-  const navigate = useNavigate();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  // Handle input change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false)
 
   // Handle login
   const handleSubmit = async (e) => {
     e.preventDefault();
+  }
 
-    if (!formData.email || !formData.password) {
-      toast.error("Please enter email and password");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // ------------------------------------
-      // API LOGIN WILL COME HERE
-      // ------------------------------------
-      console.log("Login Data:", {
-        role,
-        ...formData,
-      });
-
-      // Temporary login
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast.success(
-        `${role === "admin" ? "Admin" : "Employee"} login successful`
-      );
-
-      // Redirect after login
-      navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-      toast.error("Login failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
@@ -86,7 +41,7 @@ const LoginForm = ({ role, title, subtitle }) => {
           {/* Header */}
           <div className="mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-white mb-5">
-              <LogIn size={24} /> 
+              <LogIn size={24} />
             </div>
 
             <h2 className="text-3xl font-semibold text-slate-900 tracking-tight mb-2">
@@ -98,13 +53,20 @@ const LoginForm = ({ role, title, subtitle }) => {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0 ">
+                {error}
+              </div>
+            </div>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
 
             {/* Email */}
             <div>
               <label
-                htmlFor="email"
                 className="block text-sm font-medium text-slate-700 mb-2"
               >
                 Email Address
@@ -120,8 +82,8 @@ const LoginForm = ({ role, title, subtitle }) => {
                   id="email"
                   type="email"
                   name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder={
                     role === "admin"
                       ? "Enter admin email"
@@ -161,8 +123,8 @@ const LoginForm = ({ role, title, subtitle }) => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   className="w-full h-12 pl-11 pr-12 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
