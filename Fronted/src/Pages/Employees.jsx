@@ -116,7 +116,7 @@ const Employees = () => {
                     className="h-[72px] w-[72px] rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-indigo-50 text-xl font-medium text-indigo-400">
+                  <div className="flex h-18 w-[72px] items-center justify-center rounded-full bg-indigo-50 text-xl font-medium text-indigo-400">
                     {getInitials(employee)}
                   </div>
                 )}

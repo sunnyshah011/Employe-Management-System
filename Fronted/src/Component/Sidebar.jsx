@@ -23,10 +23,15 @@ const Sidebar = () => {
       path: "/dashboard",
       icon: LayoutDashboard,
     },
+    // {
+    //   name: "Attendance",
+    //   path: "/attendance",
+    //   icon: CalendarCheck,
+    // },
     {
-      name: "Attendance",
-      path: "/attendance",
-      icon: CalendarCheck,
+      name: "Employee",
+      path: "/employees",
+      icon: UserRound ,
     },
     {
       name: "Leave",
@@ -46,10 +51,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-[250px] flex-col bg-[#0b1328] text-white">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-62.5 flex-col bg-[#0b1328] text-white">
 
       {/* Logo */}
-      <div className="flex h-[105px] items-center gap-4 border-b border-white/5 px-7">
+      <div className="flex h-26.25 items-center gap-4 border-b border-white/5 px-7">
         <div className="flex h-9 w-9 items-center justify-center">
           <UserRound size={25} strokeWidth={2} />
         </div>
@@ -111,17 +116,16 @@ const Sidebar = () => {
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group relative flex h-9 items-center gap-3 rounded-md px-4 text-xs transition ${
-                    isActive
-                      ? "bg-[#202957] text-indigo-300"
-                      : "text-slate-300 hover:bg-[#151e35] hover:text-white"
+                  `group relative flex h-9 items-center gap-3 rounded-md px-4 text-xs transition ${isActive
+                    ? "bg-[#202957] text-indigo-300"
+                    : "text-slate-300 hover:bg-[#151e35] hover:text-white"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute left-0 top-0 h-full w-[3px] rounded-r bg-indigo-500" />
+                      <span className="absolute left-0 top-0 h-full w-0.75 rounded-r bg-indigo-500" />
                     )}
 
                     <Icon size={15} strokeWidth={1.7} />
