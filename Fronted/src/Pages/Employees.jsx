@@ -1,160 +1,196 @@
-import React, { useMemo, useState } from "react";
-import {
-  Plus,
-  Search,
-  UsersRound,
-} from "lucide-react";
-
-import { dummyEmployeeData, DEPARTMENTS } from "../assets/assets";
+import { useMemo, useState } from "react"
+import { Plus, Search } from "lucide-react"
+import { dummyEmployeeData, DEPARTMENTS } from "../assets/assets"
+import EmployeeCard from "../Component/EmployeeCard"
+import EmployeeForm from "../Component/EmployeeForm"
 
 const Employees = () => {
-  const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState("All Departments");
+  const [employees, setEmployees] = useState(
+    Array.isArray(dummyEmployeeData)
+      ? dummyEmployeeData.filter(Boolean)
+      : []
+  )
 
-  const employees = useMemo(() => {
-    return dummyEmployeeData.filter((employee) => {
-      const fullName = `${employee.firstName} ${employee.lastName}`;
+  const [search, setSearch] = useState("")
+  const [department, setDepartment] = useState("All Departments")
+
+  const [modal, setModal] = useState(null)
+  const [selectedEmployee, setSelectedEmployee] = useState(null)
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((employee) => {
+      const fullName =
+        `${employee.firstName || ""} ${employee.lastName || ""}`.toLowerCase()
 
       const matchesSearch =
-        fullName.toLowerCase().includes(search.toLowerCase()) ||
-        employee.email.toLowerCase().includes(search.toLowerCase()) ||
-        employee.position.toLowerCase().includes(search.toLowerCase());
+        fullName.includes(search.toLowerCase()) ||
+        (employee.position || "")
+          .toLowerCase()
+          .includes(search.toLowerCase())
 
       const matchesDepartment =
         department === "All Departments" ||
-        employee.department === department;
+        employee.department === department
 
-      return matchesSearch && matchesDepartment;
-    });
-  }, [search, department]);
+      return matchesSearch && matchesDepartment
+    })
+  }, [employees, search, department])
 
-  const getInitials = (employee) => {
-    return `${employee.firstName?.charAt(0) || ""}${
-      employee.lastName?.charAt(0) || ""
-    }`;
-  };
+  const openModal = (mode, employee = null) => {
+    setSelectedEmployee(employee)
+    setModal(mode)
+  }
+
+  const closeModal = () => {
+    setModal(null)
+    setSelectedEmployee(null)
+  }
+
+  // ADD
+  const handleAdd = (newEmployee) => {
+    const id = Date.now().toString()
+
+    const employee = {
+      ...newEmployee,
+      id,
+      _id: id,
+      isDeleted: false,
+      image: null,
+      employmentStatus: "ACTIVE",
+      userId: {
+        role: newEmployee.role || "EMPLOYEE",
+      },
+    }
+
+    setEmployees((prev) => [...prev, employee])
+    closeModal()
+  }
+
+  // EDIT
+  const handleEdit = (updatedEmployee) => {
+    if (!selectedEmployee) return
+
+    setEmployees((prev) =>
+      prev.map((employee) =>
+        employee.id === selectedEmployee.id
+          ? {
+              ...employee,
+              ...updatedEmployee,
+              userId: {
+                ...employee.userId,
+                role: updatedEmployee.role || employee.userId?.role,
+              },
+            }
+          : employee
+      )
+    )
+
+    closeModal()
+  }
+
+  // DELETE
+  const handleDelete = () => {
+    if (!selectedEmployee) return
+
+    setEmployees((prev) =>
+      prev.filter((employee) => employee.id !== selectedEmployee.id)
+    )
+
+    closeModal()
+  }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-slate-900">
-            Employees
-          </h1>
+    <main className="min-h-screen bg-white px-6 py-8 sm:px-8">
+      <div className="mx-auto max-w-[1100px]">
 
-          <p className="mt-1 text-xs text-slate-500">
-            Manage your team members
-          </p>
+        {/* Header */}
+        <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+              Employees
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Manage your team members
+            </p>
+          </div>
+
+          <button
+            onClick={() => openModal("add")}
+            className="flex h-10 items-center gap-2 rounded-md bg-indigo-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
+          >
+            <Plus size={17} />
+            Add Employee
+          </button>
         </div>
 
-        {/* Add Employee */}
-        <button
-          type="button"
-          className="flex h-9 items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 text-xs font-medium text-white shadow-md shadow-indigo-200 transition hover:bg-indigo-700"
-        >
-          <Plus size={15} />
-          Add Employee
-        </button>
+        {/* Search + Filter */}
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="text"
+              placeholder="Search employees..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 w-full rounded-md border border-slate-200 pl-10 pr-4 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </div>
+
+          <select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            className="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-indigo-400 sm:w-[180px]"
+          >
+            <option>All Departments</option>
+
+            {DEPARTMENTS.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Cards */}
+        {filteredEmployees.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredEmployees.map((employee) => (
+              <EmployeeCard
+                key={employee.id}
+                employee={employee}
+                onView={() => openModal("view", employee)}
+                onEdit={() => openModal("edit", employee)}
+                onDelete={() => openModal("delete", employee)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 py-16 text-center">
+            <p className="text-sm text-slate-500">
+              No employees found
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Search + Filter */}
-      <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-
-          <input
-            type="text"
-            placeholder="Search employees..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-md border border-slate-200 bg-white pl-10 pr-4 text-xs text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-          />
-        </div>
-
-        {/* Department */}
-        <select
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          className="h-10 w-full rounded-md border border-slate-200 bg-white px-4 text-xs text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:w-[145px]"
-        >
-          <option>All Departments</option>
-
-          {DEPARTMENTS.map((dept) => (
-            <option key={dept} value={dept}>
-              {dept}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Employee Cards */}
-      {employees.length > 0 ? (
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {employees.map((employee) => (
-            <div
-              key={employee._id}
-              className="group overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-indigo-200 hover:shadow-md"
-            >
-              {/* Top section */}
-              <div className="relative flex h-[176px] items-center justify-center bg-slate-50">
-
-                {/* Department Badge */}
-                <span className="absolute left-3 top-3 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-medium text-slate-600 shadow-sm">
-                  {employee.department}
-                </span>
-
-                {/* Profile */}
-                {employee.image ? (
-                  <img
-                    src={employee.image}
-                    alt={`${employee.firstName} ${employee.lastName}`}
-                    className="h-[72px] w-[72px] rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-18 w-[72px] items-center justify-center rounded-full bg-indigo-50 text-xl font-medium text-indigo-400">
-                    {getInitials(employee)}
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom section */}
-              <div className="px-5 py-5">
-                <h2 className="text-sm font-medium text-slate-800">
-                  {employee.firstName} {employee.lastName}
-                </h2>
-
-                <p className="mt-1 text-[10px] text-slate-500">
-                  {employee.position}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* No Employees */
-        <div className="mt-5 flex min-h-[250px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
-          <UsersRound
-            size={32}
-            className="text-slate-300"
-            strokeWidth={1.5}
-          />
-
-          <p className="mt-3 text-sm font-medium text-slate-600">
-            No employees found
-          </p>
-
-          <p className="mt-1 text-xs text-slate-400">
-            Try changing your search or department filter.
-          </p>
-        </div>
+      {/* ONE FORM COMPONENT HANDLES ALL MODALS */}
+      {modal && (
+        <EmployeeForm
+          mode={modal}
+          employee={selectedEmployee}
+          onClose={closeModal}
+          onAdd={handleAdd}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
-    </div>
-  );
-};
+    </main>
+  )
+}
 
-export default Employees;
+export default Employees
