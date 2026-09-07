@@ -17,21 +17,23 @@ import { dummyProfileData } from "../assets/assets";
 const Sidebar = () => {
   const profile = dummyProfileData;
 
+  const roll = "" || "EMPLOYEE"
   const menuItems = [
     {
       name: "Dashboard",
       path: "/dashboard",
       icon: LayoutDashboard,
     },
-    // {
-    //   name: "Attendance",
-    //   path: "/attendance",
-    //   icon: CalendarCheck,
-    // },
-    {
+    roll === "ADMIN" ?
+      {
       name: "Employee",
       path: "/employees",
       icon: UserRound ,
+    }:
+    {
+      name: "Attendance",
+      path: "/attendance",
+      icon: CalendarCheck,
     },
     {
       name: "Leave",
@@ -49,6 +51,10 @@ const Sidebar = () => {
       icon: Settings,
     },
   ];
+
+  const handlelogout = () =>{
+    window.location.href = "/login"
+  }
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-62.5 flex-col bg-[#0b1328] text-white">
@@ -149,7 +155,7 @@ const Sidebar = () => {
 
       {/* Logout */}
       <div className="mt-auto border-t border-white/5 p-3">
-        <button className="flex h-10 w-full items-center gap-3 rounded-md px-4 text-xs text-slate-400 transition hover:bg-[#151e35] hover:text-white">
+        <button onClick={handlelogout} className="flex h-10 w-full items-center gap-3 rounded-md px-4 text-xs text-slate-400 transition hover:bg-[#151e35] hover:text-white">
           <LogOut size={15} strokeWidth={1.7} />
           <span>Log out</span>
         </button>
