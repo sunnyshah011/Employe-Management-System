@@ -1,22 +1,40 @@
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Plus, Search } from "lucide-react"
 import { dummyEmployeeData, DEPARTMENTS } from "../assets/assets"
 import EmployeeCard from "../Component/EmployeeCard"
 import EmployeeForm from "../Component/EmployeeForm"
+import LoadingAnimation from "../Component/LoadingAnimation"
 
 const Employees = () => {
-  const [employees, setEmployees] = useState(
-    Array.isArray(dummyEmployeeData)
-      ? dummyEmployeeData.filter(Boolean)
-      : []
-  )
-
+  const [employees, setEmployees] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [department, setDepartment] = useState("All Departments")
+  const [selectedDept, setSelectedDept] = useState("")
+  const [editEmployee, setEditEmployee] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
-  const [modal, setModal] = useState(null)
-  const [selectedEmployee, setSelectedEmployee] = useState(null)
+  // Fetch employees
+  const fetchEmployees = useCallback(async () => {
+    setLoading(true)
 
+    const filteredData = dummyEmployeeData.filter((emp) =>
+      selectedDept
+        ? emp.department === selectedDept
+        : emp
+    )
+
+    setEmployees(filteredData)
+
+    setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+  }, [selectedDept])
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [fetchEmployees])
+
+  // Search employees
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
       const fullName =
@@ -28,23 +46,9 @@ const Employees = () => {
           .toLowerCase()
           .includes(search.toLowerCase())
 
-      const matchesDepartment =
-        department === "All Departments" ||
-        employee.department === department
-
-      return matchesSearch && matchesDepartment
+      return matchesSearch
     })
-  }, [employees, search, department])
-
-  const openModal = (mode, employee = null) => {
-    setSelectedEmployee(employee)
-    setModal(mode)
-  }
-
-  const closeModal = () => {
-    setModal(null)
-    setSelectedEmployee(null)
-  }
+  }, [employees, search])
 
   // ADD
   const handleAdd = (newEmployee) => {
@@ -63,40 +67,44 @@ const Employees = () => {
     }
 
     setEmployees((prev) => [...prev, employee])
-    closeModal()
+    setShowCreateModal(false)
   }
 
   // EDIT
   const handleEdit = (updatedEmployee) => {
-    if (!selectedEmployee) return
+    if (!editEmployee) return
 
     setEmployees((prev) =>
       prev.map((employee) =>
-        employee.id === selectedEmployee.id
+        employee.id === editEmployee.id
           ? {
-              ...employee,
-              ...updatedEmployee,
-              userId: {
-                ...employee.userId,
-                role: updatedEmployee.role || employee.userId?.role,
-              },
-            }
+            ...employee,
+            ...updatedEmployee,
+            userId: {
+              ...employee.userId,
+              role:
+                updatedEmployee.role ||
+                employee.userId?.role,
+            },
+          }
           : employee
       )
     )
 
-    closeModal()
+    setEditEmployee(null)
   }
 
   // DELETE
   const handleDelete = () => {
-    if (!selectedEmployee) return
+    if (!editEmployee) return
 
     setEmployees((prev) =>
-      prev.filter((employee) => employee.id !== selectedEmployee.id)
+      prev.filter(
+        (employee) => employee.id !== editEmployee.id
+      )
     )
 
-    closeModal()
+    setEditEmployee(null)
   }
 
   return (
@@ -116,7 +124,7 @@ const Employees = () => {
           </div>
 
           <button
-            onClick={() => openModal("add")}
+            onClick={() => setShowCreateModal(true)}
             className="flex h-10 items-center gap-2 rounded-md bg-indigo-600 px-5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus size={17} />
@@ -142,11 +150,11 @@ const Employees = () => {
           </div>
 
           <select
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
+            value={selectedDept}
+            onChange={(e) => setSelectedDept(e.target.value)}
             className="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-indigo-400 sm:w-[180px]"
           >
-            <option>All Departments</option>
+            <option value="">All Departments</option>
 
             {DEPARTMENTS.map((dept) => (
               <option key={dept} value={dept}>
@@ -156,16 +164,33 @@ const Employees = () => {
           </select>
         </div>
 
-        {/* Cards */}
-        {filteredEmployees.length > 0 ? (
+        {/* Loading */}
+        {loading ? (
+          <LoadingAnimation />
+        ) : filteredEmployees.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredEmployees.map((employee) => (
               <EmployeeCard
                 key={employee.id}
                 employee={employee}
-                onView={() => openModal("view", employee)}
-                onEdit={() => openModal("edit", employee)}
-                onDelete={() => openModal("delete", employee)}
+                onView={() =>
+                  setEditEmployee({
+                    mode: "view",
+                    employee,
+                  })
+                }
+                onEdit={() =>
+                  setEditEmployee({
+                    mode: "edit",
+                    employee,
+                  })
+                }
+                onDelete={() =>
+                  setEditEmployee({
+                    mode: "delete",
+                    employee,
+                  })
+                }
               />
             ))}
           </div>
@@ -176,19 +201,30 @@ const Employees = () => {
             </p>
           </div>
         )}
+
       </div>
 
-      {/* ONE FORM COMPONENT HANDLES ALL MODALS */}
-      {modal && (
+      {/* ADD MODAL */}
+      {showCreateModal && (
         <EmployeeForm
-          mode={modal}
-          employee={selectedEmployee}
-          onClose={closeModal}
+          mode="add"
+          employee={null}
+          onClose={() => setShowCreateModal(false)}
           onAdd={handleAdd}
+        />
+      )}
+
+      {/* EDIT / VIEW / DELETE MODAL */}
+      {editEmployee && (
+        <EmployeeForm
+          mode={editEmployee.mode}
+          employee={editEmployee.employee}
+          onClose={() => setEditEmployee(null)}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
       )}
+
     </main>
   )
 }

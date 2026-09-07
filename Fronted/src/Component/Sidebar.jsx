@@ -17,7 +17,7 @@ import { dummyProfileData } from "../assets/assets";
 const Sidebar = () => {
   const profile = dummyProfileData;
 
-  const roll = "" || "EMPLOYEE"
+  const roll = "ADMIN" || "EMPLOYEE"
   const menuItems = [
     {
       name: "Dashboard",
