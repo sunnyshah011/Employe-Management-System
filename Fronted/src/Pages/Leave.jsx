@@ -1,160 +1,97 @@
-import React from "react";
-import { Check, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import LoadingAnimation from '../Component/LoadingAnimation'
+import { PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react'
 
 const Leave = () => {
-  const leaveData = [
-    {
-      employee: "David Michael",
-      type: "ANNUAL",
-      dates: "Mar 27 — Mar 29, 2026",
-      reason: "Out for a trip",
-      status: "APPROVED",
-    },
-    {
-      employee: "Alex Matthew",
-      type: "CASUAL",
-      dates: "Mar 23 — Mar 24, 2026",
-      reason: "Going For Vacations",
-      status: "REJECTED",
-    },
-    {
-      employee: "John Doe",
-      type: "CASUAL",
-      dates: "Mar 27 — Mar 28, 2026",
-      reason: "Going to visit a temple",
-      status: "PENDING",
-    },
-    {
-      employee: "David Michael",
-      type: "SICK",
-      dates: "Mar 15 — Mar 16, 2026",
-      reason: "I had a fracture on leg",
-      status: "APPROVED",
-    },
+
+  const [leaves, setLeaves] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false);
+  const isAdmin = false;
+
+  const fetchLeaves = useCallback(() => {
+    setLeaves(dummyLeaveData)
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    useEffect(() => {
+      fetchLeaves()
+    }, [fetchLeaves])
+  })
+
+  if (loading) return <LoadingAnimation />
+
+  const approvedLeaves = leaves.filter((leave) => leave.status === "APPROVED");
+  const sickCount = approvedLeaves.filter((leave) => leave.type === "SICK").length;
+  const casualCount = approvedLeaves.filter((leave) => leave.type === "CASUAL").length;
+  const annualCount = approvedLeaves.filter((leave) => leave.type === "ANNUAL").length;
+
+  const leaveStats = [
+    { label: "Sick Leave", value: sickCount, icon: ThermometerIcon },
+    { label: "Casual Leave", value: casualCount, icon: UmbrellaIcon },
+    { label: "Annual Leave", value: annualCount, icon: PalmtreeIcon },
   ];
 
-  return (
-    <div className="min-h-screen bg-white px-8 py-8">
-      <div className="w-full">
-        {/* Header */}
-        <div className="mb-7">
-          <h1 className="text-[22px] font-semibold tracking-tight text-[#172033]">
-            Leave Management
-          </h1>
 
-          <p className="mt-1 text-[12px] text-[#62718f]">
-            Manage leave applications
+  return (
+    <div className="animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1>Leave Management</h1>
+          <p>
+            {isAdmin
+              ? "Manage leave applications"
+              : "Your leave history and requests"}
           </p>
         </div>
 
-        {/* Table */}
-        <div className="overflow-hidden rounded-lg border border-[#e7ebf2] bg-white">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="h-[43px] bg-[#fbfcfe]">
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  EMPLOYEE
-                </th>
-
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  TYPE
-                </th>
-
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  DATES
-                </th>
-
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  REASON
-                </th>
-
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  STATUS
-                </th>
-
-                <th className="px-5 text-left text-[10px] font-bold tracking-wide text-[#65728d]">
-                  ACTIONS
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {leaveData.map((leave, index) => (
-                <tr
-                  key={index}
-                  className="h-[52px] border-t border-[#edf0f5]"
-                >
-                  {/* Employee */}
-                  <td className="px-5 text-[12px] font-medium text-[#1d273c]">
-                    {leave.employee}
-                  </td>
-
-                  {/* Type */}
-                  <td className="px-5">
-                    <span className="inline-flex rounded-md bg-[#f0f3f7] px-3 py-[5px] text-[9px] font-semibold text-[#56647e]">
-                      {leave.type}
-                    </span>
-                  </td>
-
-                  {/* Dates */}
-                  <td className="px-5 text-[11px] text-[#667592]">
-                    {leave.dates}
-                  </td>
-
-                  {/* Reason */}
-                  <td className="px-5 text-[11px] text-[#566681]">
-                    {leave.reason}
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-5">
-                    <StatusBadge status={leave.status} />
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-5">
-                    {leave.status === "PENDING" && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="flex h-[25px] w-[25px] items-center justify-center rounded-md bg-[#eafaf4] text-[#16a675] hover:bg-[#d8f6ea]"
-                          title="Approve"
-                        >
-                          <Check size={14} />
-                        </button>
-
-                        <button
-                          className="flex h-[25px] w-[25px] items-center justify-center rounded-md bg-[#fff0f2] text-[#f0445c] hover:bg-[#ffe1e5]"
-                          title="Reject"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {!isAdmin && !isDeleted && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
+          >
+            <PlusIcon className="w-4 h-4" />
+            Apply for Leave
+          </button>
+        )}
       </div>
+
+      {!isAdmin && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8">
+          {leaveStats.map((s) => (
+            <div
+              key={s.label}
+              className="card card-hover p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden group"
+            >
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-slate-500/70 group-hover:bg-indigo-500/70"
+              />
+
+              <div className="p-3 bg-slate-100 rounded-lg group-hover:bg-indigo-50 transition-colors duration-200">
+                <s.icon
+                  className="w-5 h-5 text-slate-600 group-hover:text-indigo-600 transition-colors duration-200"
+                />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-500">{s.label}</p>
+                <p className="text-2xl font-bold text-slate-900 tracking-tight">
+                  {s.value}{" "}
+                  <span className="text-sm font-normal text-slate-400">
+                    taken
+                  </span>
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
     </div>
-  );
-};
 
-const StatusBadge = ({ status }) => {
-  const styles = {
-    APPROVED: "bg-[#e9faf4] text-[#11966b]",
-    REJECTED: "bg-[#fff0f2] text-[#ed3852]",
-    PENDING: "bg-[#fff7e8] text-[#dc7700]",
-  };
+  )
+}
 
-  return (
-    <span
-      className={`inline-flex rounded-md px-3 py-[5px] text-[9px] font-semibold ${styles[status]}`}
-    >
-      {status}
-    </span>
-  );
-};
-
-export default Leave;
+export default Leave
