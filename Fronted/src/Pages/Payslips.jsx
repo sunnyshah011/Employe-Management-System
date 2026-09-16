@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { dummyEmployeeData, dummyPayslipData } from '../assets/assets';
 import LoadingAnimation from '../Component/LoadingAnimation';
+import PayslipList from '../Component/Payslip/PayslipList';
+import GeneratePayslipForm from '../Component/Payslip/GeneratePayslipForm';
 
 const Payslips = () => {
 
@@ -47,14 +49,12 @@ const Payslips = () => {
         </div>
 
         {isAdmin && (
-          <button className="btn-primary">
-            Generate Payslip
-          </button>
+          <GeneratePayslipForm employees={employees} onSuccess={fetchPayslips} />
         )}
 
       </div>
 
-      <p>Payslip List</p>
+      <PayslipList payslips={payslips} isAdmin={isAdmin} />
 
     </div>
   );
