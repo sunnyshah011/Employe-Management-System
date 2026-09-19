@@ -61,6 +61,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
                             type="password"
                             name="newPassword"
                             required
+                            className="w-full"
                         />
                     </div>
 
@@ -71,6 +72,18 @@ const ChangePasswordModal = ({ open, onClose }) => {
                             className="btn-secondary flex-1"
                         >
                             Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary flex-1 flex justify-center items-center gap-2"
+                        >
+                            {loading && (
+                                <Loader2Icon className="w-4 h-4 animate-spin" />
+                            )}
+
+                            Update Password
                         </button>
                     </div>
                 </form>
