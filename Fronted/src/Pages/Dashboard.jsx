@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   if (loading) return <p>loading</p>
   if (!data) return <p>failed to load data</p>
-  if (data.role === "ADMIN") {
+  if (data.role === "EMPLOYEE") {
     return <AdminDashboard data={data} />
   } else {
     return <EmployeeDashboard data={data} />

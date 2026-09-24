@@ -28,6 +28,7 @@ const App = () => {
             />
           }
         />
+
         <Route
           path="/login/employee"
           element={
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/payslips" element={<Payslips />} />
           <Route path="/settings" element={<Setting />} />
         </Route>
+
         <Route path="/print/payslips/:id" element={<PrintPayslip />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
@@ -55,3 +57,5 @@ const App = () => {
 };
 
 export default App;
+
+
